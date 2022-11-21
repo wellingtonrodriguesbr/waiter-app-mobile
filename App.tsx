@@ -1,5 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
+import "intl";
+import "intl/locale-data/jsonp/pt-BR";
 import { Main } from "./src/screens/Main";
 
 export default function App() {
