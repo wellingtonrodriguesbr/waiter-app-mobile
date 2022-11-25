@@ -1,4 +1,4 @@
-import { StatusBar } from "expo-status-bar";
+import { StatusBar } from "react-native";
 import { useFonts } from "expo-font";
 import "intl";
 import "intl/locale-data/jsonp/pt-BR";
@@ -18,7 +18,11 @@ export default function App() {
   return (
     <>
       <Main />
-      <StatusBar style="dark" translucent backgroundColor="transparent" />
+      <StatusBar
+        barStyle="dark-content"
+        translucent
+        backgroundColor="transparent"
+      />
     </>
   );
 }
