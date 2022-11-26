@@ -11,18 +11,21 @@ import {
 } from "./styles";
 import { Button } from "../../components/Button";
 import { TableModal } from "../../components/TableModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Cart } from "../../components/Cart";
 import { CartItem } from "../../types/CartItem";
 import { Product } from "../../types/Product";
 import { ActivityIndicator } from "react-native";
+import { Category } from "../../types/Category";
+import { api } from "../../service/api";
 
 export function Main() {
   const [isTableModalVisible, setIsTableModalVisible] = useState(false);
   const [selectedTable, setSelectedTable] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   function handleSaveTable(table: string) {
     setSelectedTable(table);
@@ -80,6 +83,39 @@ export function Main() {
     });
   }
 
+  async function getCategories() {
+    try {
+      setIsLoading(true);
+      const { data } = await api.get("/categories");
+      return data;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function getProducts() {
+    try {
+      setIsLoading(true);
+      const { data } = await api.get("/products");
+      return data;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    Promise.all([getCategories(), getProducts()]).then(
+      ([categoriesResponse, productsResponse]) => {
+        setCategories(categoriesResponse);
+        setProducts(productsResponse);
+      }
+    );
+  }, []);
+
   return (
     <>
       <Container>
@@ -95,7 +131,7 @@ export function Main() {
         ) : (
           <>
             <CategoriesContainer>
-              <Categories />
+              <Categories categories={categories} />
             </CategoriesContainer>
 
             <MenuContainer>
