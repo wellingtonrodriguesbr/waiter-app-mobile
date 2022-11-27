@@ -3,6 +3,7 @@ import styled from "styled-components/native";
 export const ProductContainer = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
+  margin-bottom: 8px;
 `;
 
 export const ProductImage = styled.Image`
