@@ -26,6 +26,7 @@ export function Main() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
   function handleSaveTable(table: string) {
     setSelectedTable(table);
@@ -39,26 +40,26 @@ export function Main() {
   function handleAddToCart(product: Product) {
     if (!selectedTable) {
       setIsTableModalVisible(true);
-    } else {
-      setCartItems((prevState) => {
-        const itemIndex = prevState.findIndex(
-          (cartItem) => cartItem.product._id === product._id
-        );
-
-        if (itemIndex < 0) {
-          return [...prevState, { quantity: 1, product }];
-        }
-
-        const newCartItems = [...prevState];
-        const item = newCartItems[itemIndex];
-        newCartItems[itemIndex] = {
-          ...item,
-          quantity: item.quantity + 1,
-        };
-
-        return newCartItems;
-      });
     }
+    setCartItems((prevState) => {
+      const itemIndex = prevState.findIndex(
+        (cartItem) => cartItem.product._id === product._id
+      );
+
+      if (itemIndex < 0) {
+        console.log([...prevState, { product, quantity: 1 }]);
+        return [...prevState, { product, quantity: 1 }];
+      }
+
+      const newCartItems = [...prevState];
+      const item = newCartItems[itemIndex];
+      newCartItems[itemIndex] = {
+        ...item,
+        quantity: item.quantity + 1,
+      };
+
+      return newCartItems;
+    });
   }
 
   function handleDecrementCartItem(product: Product) {
@@ -90,8 +91,6 @@ export function Main() {
       return data;
     } catch (error) {
       console.log(error);
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -102,9 +101,18 @@ export function Main() {
       return data;
     } catch (error) {
       console.log(error);
-    } finally {
-      setIsLoading(false);
     }
+  }
+
+  async function handleSelectCategory(categoryId: string) {
+    const route = !categoryId
+      ? "/products"
+      : `/categories/${categoryId}/products`;
+    setIsLoadingProducts(true);
+    const { data } = await api.get(route);
+
+    setProducts(data);
+    setIsLoadingProducts(false);
   }
 
   useEffect(() => {
@@ -112,6 +120,7 @@ export function Main() {
       ([categoriesResponse, productsResponse]) => {
         setCategories(categoriesResponse);
         setProducts(productsResponse);
+        setIsLoading(false);
       }
     );
   }, []);
@@ -131,12 +140,21 @@ export function Main() {
         ) : (
           <>
             <CategoriesContainer>
-              <Categories categories={categories} />
+              <Categories
+                categories={categories}
+                onSelectCategory={handleSelectCategory}
+              />
             </CategoriesContainer>
 
-            <MenuContainer>
-              <Menu onAddToCart={handleAddToCart} products={products} />
-            </MenuContainer>
+            {isLoadingProducts ? (
+              <Loading>
+                <ActivityIndicator size="large" color="#d73035" />
+              </Loading>
+            ) : (
+              <MenuContainer>
+                <Menu onAddToCart={handleAddToCart} products={products} />
+              </MenuContainer>
+            )}
           </>
         )}
       </Container>
@@ -157,6 +175,7 @@ export function Main() {
               onAdd={handleAddToCart}
               onDecrement={handleDecrementCartItem}
               onConfirmOrder={handleResetOrder}
+              selectedTable={selectedTable}
             />
           )}
         </FooterContainer>
